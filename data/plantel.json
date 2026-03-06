@@ -1,0 +1,166 @@
+[
+  {
+    "anio": 2024,
+    "dt": "Fabián Bustos",
+    "jugadores": [
+      {
+        "id": 1,
+        "nombre": "José Carvallo",
+        "posicion": "Portero",
+        "numero": 1,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 2,
+        "nombre": "Aldo Corzo",
+        "posicion": "Defensa",
+        "numero": 2,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 3,
+        "nombre": "Rodrigo Ureña",
+        "posicion": "Mediocampista",
+        "numero": 8,
+        "nacionalidad": "Chile"
+      },
+      {
+        "id": 4,
+        "nombre": "Andy Polo",
+        "posicion": "Extremo",
+        "numero": 11,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 5,
+        "nombre": "Alex Valera",
+        "posicion": "Delantero",
+        "numero": 9,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 6,
+        "nombre": "Diego Churin",
+        "posicion": "Delantero",
+        "numero": 10,
+        "nacionalidad": "Argentina"
+      },
+      {
+        "id": 7,
+        "nombre": "Nelinho Quina",
+        "posicion": "Mediocampista",
+        "numero": 6,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 8,
+        "nombre": "Christofer Gonzales",
+        "posicion": "Mediocampista",
+        "numero": 20,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 9,
+        "nombre": "Jorge Murrugarra",
+        "posicion": "Mediocampista",
+        "numero": 5,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 10,
+        "nombre": "Waldir Saenz",
+        "posicion": "Defensa",
+        "numero": 4,
+        "nacionalidad": "Perú"
+      }
+    ],
+    "goleador": "Alex Valera",
+    "campeon": true
+  },
+  {
+    "anio": 2023,
+    "dt": "Jorge Fossati",
+    "jugadores": [
+      {
+        "id": 1,
+        "nombre": "José Carvallo",
+        "posicion": "Portero",
+        "numero": 1,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 2,
+        "nombre": "Aldo Corzo",
+        "posicion": "Defensa",
+        "numero": 2,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 3,
+        "nombre": "Rodrigo Ureña",
+        "posicion": "Mediocampista",
+        "numero": 8,
+        "nacionalidad": "Chile"
+      },
+      {
+        "id": 4,
+        "nombre": "Andy Polo",
+        "posicion": "Extremo",
+        "numero": 11,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 5,
+        "nombre": "Alex Valera",
+        "posicion": "Delantero",
+        "numero": 9,
+        "nacionalidad": "Perú"
+      }
+    ],
+    "goleador": "Álex Valera",
+    "campeon": false
+  },
+  {
+    "anio": 2013,
+    "dt": "Roberto Chale",
+    "jugadores": [
+      {
+        "id": 1,
+        "nombre": "Leao Butrón",
+        "posicion": "Portero",
+        "numero": 1,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 2,
+        "nombre": "Alberto Rodríguez",
+        "posicion": "Defensa",
+        "numero": 5,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 3,
+        "nombre": "Juan Manuel Vargas",
+        "posicion": "Defensa",
+        "numero": 3,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 4,
+        "nombre": "Rinaldo Cruzado",
+        "posicion": "Mediocampista",
+        "numero": 8,
+        "nacionalidad": "Perú"
+      },
+      {
+        "id": 5,
+        "nombre": "Paolo Guerrero",
+        "posicion": "Delantero",
+        "numero": 9,
+        "nacionalidad": "Perú"
+      }
+    ],
+    "goleador": "Paolo Guerrero",
+    "campeon": true
+  }
+]
