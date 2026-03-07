@@ -19,14 +19,20 @@ interface Temporada {
     campeon: boolean;
 }
 
-// POST /api/plantel/init
+// POST /api/plantel/init?secret=<INIT_SECRET>
 // Crea las tablas y siembra los datos desde data/plantel.json (idempotente).
-// Está protegido por el middleware JWT — solo admins autenticados pueden llamarlo.
-export async function POST() {
+export async function POST(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const secret = searchParams.get('secret');
+    const expected = process.env.INIT_SECRET ?? 'init-crema-2026';
+
+    if (secret !== expected) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
     try {
         await crearTablas();
 
-        // Seed desde el JSON local (solo inserta si no existe — ON CONFLICT DO NOTHING)
         const raw = await readFile(
             path.join(process.cwd(), 'data', 'plantel.json'),
             'utf-8'
@@ -37,14 +43,12 @@ export async function POST() {
         let jugadoresInsertados = 0;
 
         for (const temp of data) {
-            const result = await sql`
+            await sql`
                 INSERT INTO plantel_temporadas (anio, dt, goleador, campeon)
                 VALUES (${temp.anio}, ${temp.dt}, ${temp.goleador ?? ''}, ${temp.campeon ?? false})
                 ON CONFLICT (anio) DO NOTHING
             `;
-            if (result.length !== undefined || (result as unknown as { rowCount: number }).rowCount > 0) {
-                temporadasInsertadas++;
-            }
+            temporadasInsertadas++;
 
             for (const j of temp.jugadores) {
                 await sql`

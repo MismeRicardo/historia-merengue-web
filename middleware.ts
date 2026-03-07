@@ -6,6 +6,14 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export async function middleware(request: NextRequest) {
+  // Allow public GET requests to plantel API (consumed by mobile app)
+  if (
+    request.nextUrl.pathname.startsWith('/api/plantel') &&
+    request.method === 'GET'
+  ) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get('admin_token')?.value;
 
   if (!token) {
@@ -23,5 +31,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/plantel/:path*'],
+  matcher: ['/dashboard/:path*', '/api/plantel', '/api/plantel/[anio]'],
 };
