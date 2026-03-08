@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <span className="text-base text-[#FFFEF4]" style={{ fontWeight: 900 }}>U</span>
                         </div>
                         <div className="overflow-hidden">
-                            <div className="text-white font-bold text-sm truncate">Historia Crema</div>
+                            <div className="text-white font-bold text-sm truncate">Historia Merengue</div>
                             <div className="text-gray-500 text-xs">Panel Admin</div>
                         </div>
                     </div>

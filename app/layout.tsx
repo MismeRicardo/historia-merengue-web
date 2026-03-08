@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Historia Crema · Admin',
-  description: 'Panel de administración de Historia Crema — Club Universitario de Deportes',
+  title: 'Historia Merengue · Admin',
+  description: 'Panel de administración de Historia Merengue — Club Universitario de Deportes',
 };
 
 export default function RootLayout({

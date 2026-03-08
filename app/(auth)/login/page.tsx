@@ -49,7 +49,7 @@ export default function LoginPage() {
                             U
                         </span>
                     </div>
-                    <h1 className="text-2xl font-black text-black">Historia Crema</h1>
+                    <h1 className="text-2xl font-black text-black">Historia Merengue</h1>
                     <p className="text-sm text-gray-500 mt-1">Panel de Administración</p>
                 </div>
 
