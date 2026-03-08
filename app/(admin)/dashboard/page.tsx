@@ -78,20 +78,7 @@ export default function DashboardPage() {
                         <div className="text-sm text-gray-500 mt-1">{a.desc}</div>
                     </a>
                 ))}
-            </div>
-
-            {/* Info panel */}
-            <div className="bg-[#FFFEF4] border border-[#A6192E]/20 rounded-2xl p-6">
-                <h3 className="font-bold text-[#A6192E] mb-2">ℹ️ Credenciales por defecto</h3>
-                <p className="text-sm text-gray-600">
-                    Usuario: <code className="bg-gray-100 px-2 py-0.5 rounded font-mono">admin</code>
-                    {' '}· Contraseña: <code className="bg-gray-100 px-2 py-0.5 rounded font-mono">Admin123!</code>
-                </p>
-                <p className="text-xs text-gray-400 mt-2">
-                    Para cambiarlas, define las variables <code className="font-mono">ADMIN_USERNAME</code> y{' '}
-                    <code className="font-mono">ADMIN_PASSWORD</code> en un archivo <code className="font-mono">.env.local</code>.
-                </p>
-            </div>
+            </div>            
         </div>
     );
 }
