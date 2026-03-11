@@ -19,7 +19,7 @@ interface Temporada {
     campeon: boolean;
 }
 
-const POSICIONES = ['Portero', 'Defensa', 'Mediocampista', 'Extremo', 'Delantero'];
+const POSICIONES = [' ', 'Portero', 'Defensa', 'Mediocampista', 'Carrilero', 'Delantero'];
 
 const POS_COLOR: Record<string, string> = {
     Portero: 'bg-yellow-100 text-yellow-700',
