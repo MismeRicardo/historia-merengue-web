@@ -1,11 +1,11 @@
-import { Trophy, Users, BookOpen, Swords, Medal, Clock } from 'lucide-react';
+import { Trophy, Users, BookOpen, Swords, Medal, Clock, Shirt } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const STATS: { label: string; value: string; Icon: LucideIcon; bg: string }[] = [
     { label: 'Títulos Nacionales', value: '30', Icon: Trophy, bg: 'bg-[#A6192E]' },
     { label: 'Años de Historia', value: '102', Icon: Clock, bg: 'bg-black' },
     { label: 'Jugadores en BD', value: '52', Icon: Users, bg: 'bg-[#C9A84C]' },
-    { label: 'Eventos Históricos', value: '9', Icon: BookOpen, bg: 'bg-[#7E1325]' },
+    { label: 'Camisetas Registradas', value: '13', Icon: Shirt, bg: 'bg-[#7E1325]' },
 ];
 
 const ACCIONES: { href: string; Icon: LucideIcon; titulo: string; desc: string }[] = [
@@ -26,6 +26,12 @@ const ACCIONES: { href: string; Icon: LucideIcon; titulo: string; desc: string }
         Icon: Medal,
         titulo: 'Goleadores Históricos',
         desc: 'Actualizar tabla de máximos anotadores',
+    },
+    {
+        href: '/dashboard/camisetas',
+        Icon: Shirt,
+        titulo: 'Gestionar Camisetas',
+        desc: 'Crear, editar y eliminar camisetas por año',
     },
     {
         href: '/dashboard/historia',
@@ -78,7 +84,7 @@ export default function DashboardPage() {
                         <div className="text-sm text-gray-500 mt-1">{a.desc}</div>
                     </a>
                 ))}
-            </div>            
+            </div>
         </div>
     );
 }

@@ -14,6 +14,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public GET requests to camisetas API (consumed by mobile app)
+  if (
+    request.nextUrl.pathname.startsWith('/api/camisetas') &&
+    request.method === 'GET'
+  ) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get('admin_token')?.value;
 
   if (!token) {
@@ -31,5 +39,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/plantel', '/api/plantel/[anio]'],
+  matcher: [
+    '/dashboard/:path*',
+    '/api/plantel',
+    '/api/plantel/[anio]',
+    '/api/camisetas/:path*',
+  ],
 };
