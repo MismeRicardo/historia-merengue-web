@@ -45,4 +45,25 @@ export async function crearTablas() {
             PRIMARY KEY (id, anio)
         )
     `;
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS partidos_temporadas (
+            anio INTEGER PRIMARY KEY
+        )
+    `;
+    await sql`
+        CREATE TABLE IF NOT EXISTS partidos_items (
+            id                    INTEGER NOT NULL,
+            anio                  INTEGER NOT NULL REFERENCES partidos_temporadas(anio) ON DELETE CASCADE,
+            equipo_local          TEXT    NOT NULL DEFAULT '',
+            equipo_visitante      TEXT    NOT NULL DEFAULT '',
+            goles_local           INTEGER NOT NULL DEFAULT 0,
+            goles_visitante       INTEGER NOT NULL DEFAULT 0,
+            fecha                 TEXT    NOT NULL DEFAULT '',
+            competicion           TEXT    NOT NULL DEFAULT '',
+            goleadores_local      JSONB   NOT NULL DEFAULT '[]'::jsonb,
+            goleadores_visitante  JSONB   NOT NULL DEFAULT '[]'::jsonb,
+            PRIMARY KEY (id, anio)
+        )
+    `;
 }

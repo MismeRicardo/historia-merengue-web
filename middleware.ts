@@ -22,6 +22,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public GET requests to partidos API (consumed by mobile app)
+  if (
+    request.nextUrl.pathname.startsWith('/api/partidos') &&
+    request.method === 'GET'
+  ) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get('admin_token')?.value;
 
   if (!token) {
@@ -44,5 +52,6 @@ export const config = {
     '/api/plantel',
     '/api/plantel/[anio]',
     '/api/camisetas/:path*',
+    '/api/partidos/:path*',
   ],
 };
