@@ -108,4 +108,18 @@ export async function crearTablas() {
             icono       TEXT    NOT NULL DEFAULT 'star'
         )
     `;
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS goleadores (
+            id               INTEGER PRIMARY KEY,
+            nombre           TEXT    NOT NULL,
+            nombre_completo  TEXT    NOT NULL DEFAULT '',
+            goles            INTEGER NOT NULL DEFAULT 0,
+            temporadas       TEXT    NOT NULL DEFAULT '',
+            partidos         INTEGER NOT NULL DEFAULT 0,
+            nacionalidad     TEXT    NOT NULL DEFAULT '',
+            apodo            TEXT,
+            activo           BOOLEAN NOT NULL DEFAULT FALSE
+        )
+    `;
 }

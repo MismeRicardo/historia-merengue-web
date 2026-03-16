@@ -46,6 +46,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public GET requests to goleadores API (consumed by mobile app)
+  if (
+    request.nextUrl.pathname.startsWith('/api/goleadores') &&
+    request.method === 'GET'
+  ) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get('admin_token')?.value;
 
   if (!token) {
@@ -71,5 +79,6 @@ export const config = {
     '/api/partidos/:path*',
     '/api/entrenadores/:path*',
     '/api/historia/:path*',
+    '/api/goleadores/:path*',
   ],
 };
