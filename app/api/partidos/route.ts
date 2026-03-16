@@ -11,6 +11,7 @@ interface PartidoInput {
     competicion: string;
     goleadores_local: string[];
     goleadores_visitante: string[];
+    proximo_partido?: boolean;
 }
 
 export async function GET() {
@@ -34,7 +35,8 @@ export async function GET() {
                 fecha,
                 competicion,
                 goleadores_local,
-                goleadores_visitante
+                goleadores_visitante,
+                proximo_partido
             FROM partidos_items
             ORDER BY anio DESC, fecha DESC, id ASC
         `;
@@ -53,6 +55,7 @@ export async function GET() {
                     competicion: i.competicion,
                     goleadores_local: i.goleadores_local ?? [],
                     goleadores_visitante: i.goleadores_visitante ?? [],
+                    proximo_partido: Boolean(i.proximo_partido),
                 })),
         }));
 
@@ -86,7 +89,7 @@ export async function POST(req: Request) {
             await sql`
                 INSERT INTO partidos_items (
                     id, anio, equipo_local, equipo_visitante, goles_local, goles_visitante,
-                    fecha, competicion, goleadores_local, goleadores_visitante
+                    fecha, competicion, goleadores_local, goleadores_visitante, proximo_partido
                 )
                 VALUES (
                     ${Number(p.id)},
@@ -98,7 +101,8 @@ export async function POST(req: Request) {
                     ${String(p.fecha ?? '')},
                     ${String(p.competicion ?? '')},
                     ${JSON.stringify(p.goleadores_local ?? [])}::jsonb,
-                    ${JSON.stringify(p.goleadores_visitante ?? [])}::jsonb
+                    ${JSON.stringify(p.goleadores_visitante ?? [])}::jsonb,
+                    ${Boolean(p.proximo_partido ?? false)}
                 )
             `;
         }

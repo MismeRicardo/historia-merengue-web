@@ -38,6 +38,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public GET requests to historia API (consumed by mobile app)
+  if (
+    request.nextUrl.pathname.startsWith('/api/historia') &&
+    request.method === 'GET'
+  ) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get('admin_token')?.value;
 
   if (!token) {
@@ -62,5 +70,6 @@ export const config = {
     '/api/camisetas/:path*',
     '/api/partidos/:path*',
     '/api/entrenadores/:path*',
+    '/api/historia/:path*',
   ],
 };

@@ -66,6 +66,10 @@ export async function crearTablas() {
             PRIMARY KEY (id, anio)
         )
     `;
+    await sql`
+        ALTER TABLE partidos_items
+        ADD COLUMN IF NOT EXISTS proximo_partido BOOLEAN NOT NULL DEFAULT FALSE
+    `;
 
     await sql`
         CREATE TABLE IF NOT EXISTS entrenadores (
@@ -93,5 +97,15 @@ export async function crearTablas() {
             ELSE 0
         END
         WHERE titulos_cantidad = 0
+    `;
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS historia_eventos (
+            id          INTEGER PRIMARY KEY,
+            anio        INTEGER NOT NULL,
+            titulo      TEXT    NOT NULL,
+            descripcion TEXT    NOT NULL DEFAULT '',
+            icono       TEXT    NOT NULL DEFAULT 'star'
+        )
     `;
 }

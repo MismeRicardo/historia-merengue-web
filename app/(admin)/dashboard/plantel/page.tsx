@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Trophy, Users, X, Check } from 'lucide-react';
+import LoadingSpinner from '@/components/loading-spinner';
 
 interface Jugador {
     id: number;
@@ -201,7 +202,7 @@ export default function PlantelPage() {
             )}
 
             {cargando ? (
-                <div className="text-center py-20 text-gray-400">Cargando...</div>
+                <LoadingSpinner label="Cargando plantel" />
             ) : temporadas.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">
                     No hay temporadas. Creá la primera.

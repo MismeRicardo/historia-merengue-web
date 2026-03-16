@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Swords, X, Check, CalendarDays } from 'lucide-react';
+import LoadingSpinner from '@/components/loading-spinner';
 
 interface Partido {
     id: number;
@@ -13,6 +14,7 @@ interface Partido {
     competicion: string;
     goleadores_local: string[];
     goleadores_visitante: string[];
+    proximo_partido?: boolean;
 }
 
 interface TemporadaPartidos {
@@ -30,6 +32,7 @@ const EMPTY_PARTIDO: Partial<Partido> = {
     competicion: '',
     goleadores_local: [],
     goleadores_visitante: [],
+    proximo_partido: false,
 };
 
 function parseLista(input: string): string[] {
@@ -154,14 +157,25 @@ export default function PartidosPage() {
                 competicion: String(datos.competicion ?? ''),
                 goleadores_local: parseLista(goleadoresLocalInput),
                 goleadores_visitante: parseLista(goleadoresVisitanteInput),
+                proximo_partido: Boolean(datos.proximo_partido),
             };
 
             let partidos: Partido[];
+            let targetId: number;
             if (esNuevo) {
                 const maxId = temp.partidos.reduce((m, p) => Math.max(m, p.id), 0);
-                partidos = [...temp.partidos, { ...payload, id: maxId + 1 }];
+                targetId = maxId + 1;
+                partidos = [...temp.partidos, { ...payload, id: targetId }];
             } else {
+                targetId = payload.id;
                 partidos = temp.partidos.map((p) => (p.id === payload.id ? payload : p));
+            }
+
+            if (payload.proximo_partido) {
+                partidos = partidos.map((p) => ({
+                    ...p,
+                    proximo_partido: p.id === targetId,
+                }));
             }
 
             const res = await fetch(`/api/partidos/${anio}`, {
@@ -236,7 +250,7 @@ export default function PartidosPage() {
             )}
 
             {cargando ? (
-                <div className="text-center py-20 text-gray-400">Cargando...</div>
+                <LoadingSpinner label="Cargando partidos" />
             ) : temporadas.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">No hay temporadas. Creá la primera.</div>
             ) : (
@@ -305,6 +319,11 @@ export default function PartidosPage() {
                                                                 <td className="px-4 py-3 text-gray-700">{p.fecha || '—'}</td>
                                                                 <td className="px-4 py-3 font-medium text-gray-800">
                                                                     {p.equipo_local} {p.goles_local} - {p.goles_visitante} {p.equipo_visitante}
+                                                                    {p.proximo_partido && (
+                                                                        <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#A6192E]/10 text-[#A6192E] font-semibold align-middle">
+                                                                            Próximo
+                                                                        </span>
+                                                                    )}
                                                                 </td>
                                                                 <td className="px-4 py-3 text-gray-600">{p.competicion || '—'}</td>
                                                                 <td className="px-4 py-3">
@@ -497,6 +516,21 @@ export default function PartidosPage() {
                                     placeholder="Apellido x2"
                                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
                                 />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        checked={Boolean(modalPartido.datos.proximo_partido)}
+                                        onChange={(e) => setModalPartido((m) => ({
+                                            ...m,
+                                            datos: { ...m.datos, proximo_partido: e.target.checked },
+                                        }))}
+                                        className="w-4 h-4"
+                                    />
+                                    <span className="text-sm text-gray-700 font-medium">Marcar como próximo partido</span>
+                                </label>
                             </div>
                         </div>
 

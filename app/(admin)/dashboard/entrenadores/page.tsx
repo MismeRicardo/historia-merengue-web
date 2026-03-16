@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Pencil, Trash2, X, Check, ShieldCheck } from 'lucide-react';
+import LoadingSpinner from '@/components/loading-spinner';
 
 type Periodo = {
     desde: number;
@@ -249,7 +250,7 @@ export default function EntrenadoresPage() {
             )}
 
             {cargando ? (
-                <div className="text-center py-20 text-gray-400">Cargando...</div>
+                <LoadingSpinner label="Cargando entrenadores" />
             ) : entrenadores.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">No hay entrenadores registrados.</div>
             ) : (
