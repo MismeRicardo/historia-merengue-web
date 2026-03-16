@@ -66,4 +66,32 @@ export async function crearTablas() {
             PRIMARY KEY (id, anio)
         )
     `;
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS entrenadores (
+            id            INTEGER PRIMARY KEY,
+            nombre        TEXT    NOT NULL,
+            nacionalidad  TEXT    NOT NULL DEFAULT '',
+            periodos      JSONB   NOT NULL DEFAULT '[]'::jsonb,
+            titulos       JSONB   NOT NULL DEFAULT '[]'::jsonb,
+            partidos      INTEGER NOT NULL DEFAULT 0,
+            descripcion   TEXT    NOT NULL DEFAULT '',
+            activo        BOOLEAN NOT NULL DEFAULT FALSE
+        )
+    `;
+
+    // Migration: move from legacy JSON titles to numeric title count.
+    await sql`
+        ALTER TABLE entrenadores
+        ADD COLUMN IF NOT EXISTS titulos_cantidad INTEGER NOT NULL DEFAULT 0
+    `;
+    await sql`
+        UPDATE entrenadores
+        SET titulos_cantidad = CASE
+            WHEN jsonb_typeof(titulos) = 'array' THEN jsonb_array_length(titulos)
+            WHEN jsonb_typeof(titulos) = 'number' THEN (titulos::text)::integer
+            ELSE 0
+        END
+        WHERE titulos_cantidad = 0
+    `;
 }

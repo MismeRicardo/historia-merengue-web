@@ -1,13 +1,14 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Trophy, Users, Star, BookOpen, LogOut, Shirt } from 'lucide-react';
+import { LayoutDashboard, Trophy, Users, Star, BookOpen, LogOut, Shirt, User } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const NAV_ITEMS: { href: string; label: string; Icon: LucideIcon }[] = [
     { href: '/dashboard', label: 'Panel', Icon: LayoutDashboard },
     { href: '/dashboard/partidos', label: 'Partidos', Icon: Trophy },
     { href: '/dashboard/plantel', label: 'Plantel', Icon: Users },
+    { href: '/dashboard/entrenadores', label: 'Entrenadores', Icon: User },
     { href: '/dashboard/camisetas', label: 'Camisetas', Icon: Shirt },
     { href: '/dashboard/goleadores', label: 'Goleadores', Icon: Star },
     { href: '/dashboard/historia', label: 'Historia', Icon: BookOpen },

@@ -1,4 +1,4 @@
-import { Trophy, Users, BookOpen, Swords, Medal, Clock, Shirt } from 'lucide-react';
+import { Trophy, Users, BookOpen, Swords, Medal, Clock, Shirt, User } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const STATS: { label: string; value: string; Icon: LucideIcon; bg: string }[] = [
@@ -20,6 +20,12 @@ const ACCIONES: { href: string; Icon: LucideIcon; titulo: string; desc: string }
         Icon: Users,
         titulo: 'Gestionar Plantel',
         desc: 'Agregar o editar jugadores por temporada',
+    },
+    {
+        href: '/dashboard/entrenadores',
+        Icon: User,
+        titulo: 'Gestionar Entrenadores',
+        desc: 'Crear y editar entrenadores historicos',
     },
     {
         href: '/dashboard/goleadores',
