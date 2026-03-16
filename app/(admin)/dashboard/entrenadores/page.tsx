@@ -72,6 +72,7 @@ export default function EntrenadoresPage() {
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
+    const [filtroOtros, setFiltroOtros] = useState<'todos' | 'conTitulos' | 'sinTitulos'>('todos');
 
     const [modal, setModal] = useState<{
         abierto: boolean;
@@ -190,7 +191,37 @@ export default function EntrenadoresPage() {
         }
     };
 
-    const activos = useMemo(() => entrenadores.filter((e) => e.activo).length, [entrenadores]);
+    const entrenadorActual = useMemo(
+        () => entrenadores.find((e) => e.activo) ?? null,
+        [entrenadores]
+    );
+
+    const otrosEntrenadores = useMemo(() => {
+        const base = entrenadorActual
+            ? entrenadores.filter((e) => e.id !== entrenadorActual.id)
+            : entrenadores;
+
+        if (filtroOtros === 'conTitulos') {
+            return base.filter((e) => e.titulos > 0);
+        }
+        if (filtroOtros === 'sinTitulos') {
+            return base.filter((e) => e.titulos === 0);
+        }
+        return base;
+    }, [entrenadores, entrenadorActual, filtroOtros]);
+
+    const textoFiltro =
+        filtroOtros === 'todos'
+            ? 'Filtrar: Todos'
+            : filtroOtros === 'conTitulos'
+                ? 'Filtrar: Con títulos'
+                : 'Filtrar: Sin títulos';
+
+    const cambiarFiltroOtros = () => {
+        setFiltroOtros((prev) =>
+            prev === 'todos' ? 'conTitulos' : prev === 'conTitulos' ? 'sinTitulos' : 'todos'
+        );
+    };
 
     return (
         <div className="p-8">
@@ -208,21 +239,6 @@ export default function EntrenadoresPage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                <div className="bg-white border border-gray-100 rounded-2xl p-4">
-                    <div className="text-gray-500 text-xs">Total</div>
-                    <div className="text-3xl font-black text-black">{entrenadores.length}</div>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-2xl p-4">
-                    <div className="text-gray-500 text-xs">Activos</div>
-                    <div className="text-3xl font-black text-[#16a34a]">{activos}</div>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-2xl p-4">
-                    <div className="text-gray-500 text-xs">Historicos</div>
-                    <div className="text-3xl font-black text-[#A6192E]">{entrenadores.length - activos}</div>
-                </div>
-            </div>
-
             {error && (
                 <div className="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex justify-between items-center">
                     {error}
@@ -237,52 +253,114 @@ export default function EntrenadoresPage() {
             ) : entrenadores.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">No hay entrenadores registrados.</div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
-                    {entrenadores.map((ent) => (
-                        <div key={ent.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm h-full">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <h3 className="text-base font-bold text-black leading-tight">{ent.nombre}</h3>
-                                        {ent.activo && (
+                <>
+                    <div className="mb-5">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Entrenador actual</p>
+                        {entrenadorActual ? (
+                            <div className="bg-white rounded-2xl border border-green-200 p-4 shadow-sm">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <h3 className="text-lg font-bold text-black leading-tight">{entrenadorActual.nombre}</h3>
                                             <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">
                                                 <ShieldCheck size={12} />
                                                 Activo
                                             </span>
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-0.5">{entrenadorActual.nacionalidad || 'Sin nacionalidad'}</p>
+                                        <p className="text-xs text-gray-600 mt-2">{formatPeriodos(entrenadorActual.periodos)}</p>
+                                        {!!entrenadorActual.descripcion && (
+                                            <p className="text-xs text-gray-500 mt-2 line-clamp-2">{entrenadorActual.descripcion}</p>
+                                        )}
+                                        {entrenadorActual.titulos > 0 && (
+                                            <div className="mt-3">
+                                                <span className="text-xs px-2 py-1 rounded-full bg-[#A6192E]/10 text-[#A6192E] font-medium">
+                                                    {entrenadorActual.titulos} titulos
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-500 mt-0.5">{ent.nacionalidad || 'Sin nacionalidad'}</p>
-                                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">{formatPeriodos(ent.periodos)}</p>
-                                    {!!ent.descripcion && (
-                                        <p className="text-xs text-gray-500 mt-2 line-clamp-3">{ent.descripcion}</p>
-                                    )}
-                                    <div className="flex flex-wrap gap-2 mt-3">
-                                        {ent.titulos > 0 && (
-                                            <span className="text-xs px-2 py-1 rounded-full bg-[#A6192E]/10 text-[#A6192E] font-medium">
-                                                {ent.titulos} titulos
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
 
-                                <div className="flex gap-1 shrink-0">
-                                    <button
-                                        onClick={() => abrirEditar(ent)}
-                                        className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer"
-                                    >
-                                        <Pencil size={15} />
-                                    </button>
-                                    <button
-                                        onClick={() => setConfirmDelete({ id: ent.id, nombre: ent.nombre })}
-                                        className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                                    >
-                                        <Trash2 size={15} />
-                                    </button>
+                                    <div className="flex gap-1 shrink-0">
+                                        <button
+                                            onClick={() => abrirEditar(entrenadorActual)}
+                                            className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer"
+                                        >
+                                            <Pencil size={15} />
+                                        </button>
+                                        <button
+                                            onClick={() => setConfirmDelete({ id: entrenadorActual.id, nombre: entrenadorActual.nombre })}
+                                            className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ) : (
+                            <div className="bg-white rounded-2xl border border-gray-100 p-4 text-sm text-gray-500">
+                                No hay entrenador marcado como activo.
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Otros entrenadores</p>
+                        <button
+                            onClick={cambiarFiltroOtros}
+                            className="px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer"
+                        >
+                            {textoFiltro}
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                        {otrosEntrenadores.map((ent) => (
+                            <div key={ent.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm h-full">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <h3 className="text-base font-bold text-black leading-tight">{ent.nombre}</h3>
+                                            {ent.activo && (
+                                                <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">
+                                                    <ShieldCheck size={12} />
+                                                    Activo
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-0.5">{ent.nacionalidad || 'Sin nacionalidad'}</p>
+                                        <p className="text-xs text-gray-600 mt-2 line-clamp-2">{formatPeriodos(ent.periodos)}</p>
+                                        {!!ent.descripcion && (
+                                            <p className="text-xs text-gray-500 mt-2 line-clamp-3">{ent.descripcion}</p>
+                                        )}
+                                        <div className="flex flex-wrap gap-2 mt-3">
+                                            {ent.titulos > 0 && (
+                                                <span className="text-xs px-2 py-1 rounded-full bg-[#A6192E]/10 text-[#A6192E] font-medium">
+                                                    {ent.titulos} titulos
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-1 shrink-0">
+                                        <button
+                                            onClick={() => abrirEditar(ent)}
+                                            className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer"
+                                        >
+                                            <Pencil size={15} />
+                                        </button>
+                                        <button
+                                            onClick={() => setConfirmDelete({ id: ent.id, nombre: ent.nombre })}
+                                            className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {modal.abierto && (
