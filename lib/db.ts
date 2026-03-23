@@ -21,10 +21,27 @@ export async function crearTablas() {
             anio        INTEGER NOT NULL REFERENCES plantel_temporadas(anio) ON DELETE CASCADE,
             nombre      TEXT    NOT NULL,
             posicion    TEXT    NOT NULL,
-            numero      INTEGER NOT NULL,
+            numero      TEXT    NOT NULL DEFAULT '',
             nacionalidad TEXT   NOT NULL,
             PRIMARY KEY (id, anio)
         )
+    `;
+    await sql`
+        ALTER TABLE plantel_jugadores
+        ALTER COLUMN numero TYPE TEXT USING numero::text
+    `;
+    await sql`
+        ALTER TABLE plantel_jugadores
+        ALTER COLUMN numero SET DEFAULT ''
+    `;
+    await sql`
+        UPDATE plantel_jugadores
+        SET numero = ''
+        WHERE numero IS NULL
+    `;
+    await sql`
+        ALTER TABLE plantel_jugadores
+        ALTER COLUMN numero SET NOT NULL
     `;
 
     await sql`

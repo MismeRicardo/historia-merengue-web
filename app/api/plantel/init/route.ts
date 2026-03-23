@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import sql, { crearTablas } from '@/lib/db';
 
 interface Jugador {
     id: number;
     nombre: string;
     posicion: string;
-    numero: number;
+    numero: string;
     nacionalidad: string;
 }
 
@@ -51,9 +51,10 @@ export async function POST(req: Request) {
             temporadasInsertadas++;
 
             for (const j of temp.jugadores) {
+                const numero = String(j.numero ?? '');
                 await sql`
                     INSERT INTO plantel_jugadores (id, anio, nombre, posicion, numero, nacionalidad)
-                    VALUES (${j.id}, ${temp.anio}, ${j.nombre}, ${j.posicion}, ${j.numero}, ${j.nacionalidad})
+                    VALUES (${j.id}, ${temp.anio}, ${j.nombre}, ${j.posicion}, ${numero}, ${j.nacionalidad})
                     ON CONFLICT (id, anio) DO NOTHING
                 `;
                 jugadoresInsertados++;

@@ -8,7 +8,7 @@ interface Jugador {
     id: number;
     nombre: string;
     posicion: string;
-    numero: number;
+    numero: string;
     nacionalidad: string;
 }
 
@@ -20,18 +20,34 @@ interface Temporada {
     campeon: boolean;
 }
 
-const POSICIONES = [' ', 'Portero', 'Defensa', 'Mediocampista', 'Carrilero', 'Delantero'];
+const POSICIONES = [
+    'Portero',
+    'Defensa Central',
+    'Lateral Izquierdo',
+    'Lateral Derecho',
+    'Pivote',
+    'Mediocentro',
+    'Mediocentro Ofensivo',
+    'Extremo Izquierdo',
+    'Extremo Derecho',
+    'Delantero Centro',
+];
 
 const POS_COLOR: Record<string, string> = {
     Portero: 'bg-yellow-100 text-yellow-700',
-    Defensa: 'bg-blue-100 text-blue-700',
-    Mediocampista: 'bg-green-100 text-green-700',
-    Extremo: 'bg-purple-100 text-purple-700',
-    Delantero: 'bg-red-100 text-red-700',
+    'Defensa Central': 'bg-blue-100 text-blue-700',
+    'Lateral Izquierdo': 'bg-blue-100 text-blue-700',
+    'Lateral Derecho': 'bg-blue-100 text-blue-700',
+    Pivote: 'bg-green-100 text-green-700',
+    Mediocentro: 'bg-green-100 text-green-700',
+    'Mediocentro Ofensivo': 'bg-emerald-100 text-emerald-700',
+    'Extremo Izquierdo': 'bg-purple-100 text-purple-700',
+    'Extremo Derecho': 'bg-purple-100 text-purple-700',
+    'Delantero Centro': 'bg-red-100 text-red-700',
 };
 
 const EMPTY_TEMP: Partial<Temporada> = { anio: new Date().getFullYear(), dt: '', goleador: '', campeon: false };
-const EMPTY_JUG: Partial<Jugador> = { nombre: '', posicion: 'Delantero', numero: 1, nacionalidad: 'Perú' };
+const EMPTY_JUG: Partial<Jugador> = { nombre: '', posicion: 'Delantero Centro', numero: '', nacionalidad: 'Perú' };
 
 export default function PlantelPage() {
     const [temporadas, setTemporadas] = useState<Temporada[]>([]);
@@ -283,7 +299,14 @@ export default function PlantelPage() {
                                                     </thead>
                                                     <tbody className="divide-y divide-gray-50">
                                                         {[...temp.jugadores]
-                                                            .sort((a, b) => a.numero - b.numero)
+                                                            .sort((a, b) => {
+                                                                const numA = Number(a.numero);
+                                                                const numB = Number(b.numero);
+                                                                if (Number.isNaN(numA) && Number.isNaN(numB)) return 0;
+                                                                if (Number.isNaN(numA)) return 1;
+                                                                if (Number.isNaN(numB)) return -1;
+                                                                return numA - numB;
+                                                            })
                                                             .map((jug) => (
                                                                 <tr key={jug.id} className="hover:bg-gray-50/50">
                                                                     <td className="px-6 py-3 font-mono font-bold text-gray-500">{jug.numero}</td>
@@ -359,7 +382,7 @@ export default function PlantelPage() {
                                         min="1900"
                                         max="2100"
                                         value={modalTemp.datos.anio ?? ''}
-                                        onChange={(e) => setModalTemp((m) => ({ ...m, datos: { ...m.datos, anio: parseInt(e.target.value) } }))}
+                                        onChange={(e) => setModalTemp((m) => ({ ...m, datos: { ...m.datos, anio: Number.parseInt(e.target.value) } }))}
                                         disabled={!modalTemp.esNueva}
                                         className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#A6192E] disabled:bg-gray-50 disabled:text-gray-400"
                                     />
@@ -446,18 +469,17 @@ export default function PlantelPage() {
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-600 mb-1">Número</label>
                                     <input
-                                        type="number"
-                                        min="1"
-                                        max="99"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={modalJug.datos.numero ?? ''}
-                                        onChange={(e) => setModalJug((m) => ({ ...m, datos: { ...m.datos, numero: parseInt(e.target.value) } }))}
+                                        onChange={(e) => setModalJug((m) => ({ ...m, datos: { ...m.datos, numero: e.target.value } }))}
                                         className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-600 mb-1">Posición</label>
                                     <select
-                                        value={modalJug.datos.posicion ?? 'Delantero'}
+                                        value={modalJug.datos.posicion ?? 'Delantero Centro'}
                                         onChange={(e) => setModalJug((m) => ({ ...m, datos: { ...m.datos, posicion: e.target.value } }))}
                                         className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#A6192E] bg-white cursor-pointer"
                                     >

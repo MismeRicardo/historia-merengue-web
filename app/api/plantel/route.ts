@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import sql from '@/lib/db';
+import sql, { crearTablas } from '@/lib/db';
 
 export async function GET() {
     try {
+        await crearTablas();
         const temporadas = await sql`
             SELECT anio, dt, goleador, campeon
             FROM plantel_temporadas
@@ -11,7 +12,10 @@ export async function GET() {
         const jugadores = await sql`
             SELECT id, anio, nombre, posicion, numero, nacionalidad
             FROM plantel_jugadores
-            ORDER BY anio, numero
+            ORDER BY
+                anio,
+                CASE WHEN numero ~ '^[0-9]+$' THEN numero::integer END NULLS LAST,
+                numero
         `;
 
         const data = temporadas.map((t) => ({
@@ -34,6 +38,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        await crearTablas();
         const body = await req.json();
         if (!body.anio || !body.dt) {
             return NextResponse.json({ error: 'Año y DT son obligatorios' }, { status: 400 });

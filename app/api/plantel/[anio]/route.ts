@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import sql from '@/lib/db';
+import sql, { crearTablas } from '@/lib/db';
 
 interface Jugador {
     id: number;
     nombre: string;
     posicion: string;
-    numero: number;
+    numero: string;
     nacionalidad: string;
 }
 
@@ -14,8 +14,9 @@ export async function PUT(
     { params }: { params: Promise<{ anio: string }> }
 ) {
     try {
+        await crearTablas();
         const { anio: anioStr } = await params;
-        const anio = parseInt(anioStr, 10);
+        const anio = Number.parseInt(anioStr, 10);
         const body = await req.json();
 
         const existing = await sql`SELECT anio, dt, goleador, campeon FROM plantel_temporadas WHERE anio = ${anio}`;
@@ -41,9 +42,10 @@ export async function PUT(
         if ('jugadores' in body && Array.isArray(body.jugadores)) {
             await sql`DELETE FROM plantel_jugadores WHERE anio = ${anio}`;
             for (const j of body.jugadores as Jugador[]) {
+                const numero = String(j.numero ?? '');
                 await sql`
                     INSERT INTO plantel_jugadores (id, anio, nombre, posicion, numero, nacionalidad)
-                    VALUES (${j.id}, ${anio}, ${j.nombre}, ${j.posicion}, ${j.numero}, ${j.nacionalidad})
+                    VALUES (${j.id}, ${anio}, ${j.nombre}, ${j.posicion}, ${numero}, ${j.nacionalidad})
                 `;
             }
         }
@@ -52,7 +54,11 @@ export async function PUT(
         const [temp] = await sql`SELECT anio, dt, goleador, campeon FROM plantel_temporadas WHERE anio = ${anio}`;
         const jugadores = await sql`
             SELECT id, nombre, posicion, numero, nacionalidad
-            FROM plantel_jugadores WHERE anio = ${anio} ORDER BY numero
+            FROM plantel_jugadores
+            WHERE anio = ${anio}
+            ORDER BY
+                CASE WHEN numero ~ '^[0-9]+$' THEN numero::integer END NULLS LAST,
+                numero
         `;
 
         return NextResponse.json({ ...temp, jugadores });
@@ -67,8 +73,9 @@ export async function DELETE(
     { params }: { params: Promise<{ anio: string }> }
 ) {
     try {
+        await crearTablas();
         const { anio: anioStr } = await params;
-        const anio = parseInt(anioStr, 10);
+        const anio = Number.parseInt(anioStr, 10);
 
         const existing = await sql`SELECT anio FROM plantel_temporadas WHERE anio = ${anio}`;
         if (existing.length === 0) {
