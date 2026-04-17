@@ -4,6 +4,7 @@ import sql, { crearTablas } from '@/lib/db';
 interface CamisetaInput {
     id: number;
     proveedor: string;
+    jugador?: string | null;
     colores: string[];
     descripcion: string;
     tipo: string;
@@ -22,7 +23,7 @@ export async function GET() {
         `;
 
         const items = await sql`
-            SELECT id, anio, proveedor, colores, descripcion, tipo, principal, imagenes
+            SELECT id, anio, proveedor, jugador, colores, descripcion, tipo, principal, imagenes
             FROM camisetas_items
             ORDER BY anio DESC, id ASC
         `;
@@ -34,6 +35,7 @@ export async function GET() {
                 .map((i) => ({
                     id: i.id,
                     proveedor: i.proveedor,
+                    jugador: i.jugador ?? null,
                     colores: i.colores ?? [],
                     descripcion: i.descripcion,
                     tipo: i.tipo,
@@ -70,11 +72,12 @@ export async function POST(req: Request) {
 
         for (const c of camisetas) {
             await sql`
-                INSERT INTO camisetas_items (id, anio, proveedor, colores, descripcion, tipo, principal, imagenes)
+                INSERT INTO camisetas_items (id, anio, proveedor, jugador, colores, descripcion, tipo, principal, imagenes)
                 VALUES (
                     ${Number(c.id)},
                     ${anio},
                     ${String(c.proveedor ?? '')},
+                    ${c.jugador ? String(c.jugador) : null},
                     ${JSON.stringify(c.colores ?? [])}::jsonb,
                     ${String(c.descripcion ?? '')},
                     ${String(c.tipo ?? 'Titular')},

@@ -54,6 +54,7 @@ export async function crearTablas() {
             id          INTEGER NOT NULL,
             anio        INTEGER NOT NULL REFERENCES camisetas_temporadas(anio) ON DELETE CASCADE,
             proveedor   TEXT    NOT NULL DEFAULT '',
+            jugador     TEXT,
             colores     JSONB   NOT NULL DEFAULT '[]'::jsonb,
             descripcion TEXT    NOT NULL DEFAULT '',
             tipo        TEXT    NOT NULL DEFAULT 'Titular',
@@ -61,6 +62,10 @@ export async function crearTablas() {
             imagenes    JSONB   NOT NULL DEFAULT '[]'::jsonb,
             PRIMARY KEY (id, anio)
         )
+    `;
+    await sql`
+        ALTER TABLE camisetas_items
+        ADD COLUMN IF NOT EXISTS jugador TEXT
     `;
 
     await sql`

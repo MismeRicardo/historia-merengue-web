@@ -7,6 +7,7 @@ import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Shirt, X, Check } from 'l
 interface Camiseta {
     id: number;
     proveedor: string;
+    jugador: string | null;
     colores: string[];
     descripcion: string;
     tipo: string;
@@ -22,6 +23,7 @@ interface TemporadaCamisetas {
 const EMPTY_TEMP: Partial<TemporadaCamisetas> = { anio: new Date().getFullYear(), camisetas: [] };
 const EMPTY_CAM: Partial<Camiseta> = {
     proveedor: '',
+    jugador: null,
     colores: ['Blanco', 'Rojo'],
     descripcion: '',
     tipo: 'Titular',
@@ -34,6 +36,10 @@ function parseLista(input: string): string[] {
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
+}
+
+function formatLista(items: string[] | undefined): string {
+    return Array.isArray(items) ? items.join(', ') : '';
 }
 
 export default function CamisetasPage() {
@@ -53,7 +59,8 @@ export default function CamisetasPage() {
         anio: number;
         esNueva: boolean;
         datos: Partial<Camiseta>;
-    }>({ abierto: false, anio: 0, esNueva: true, datos: { ...EMPTY_CAM } });
+        coloresTexto: string;
+    }>({ abierto: false, anio: 0, esNueva: true, datos: { ...EMPTY_CAM }, coloresTexto: formatLista(EMPTY_CAM.colores) });
 
     const [confirmar, setConfirmar] = useState<{
         tipo: 'temporada' | 'camiseta';
@@ -93,6 +100,18 @@ export default function CamisetasPage() {
 
     const marcarComoPrincipal = (url: string) => {
         setModalCam((m) => ({ ...m, datos: { ...m.datos, principal: url } }));
+    };
+
+    const abrirModalCamiseta = (anio: number, esNueva: boolean, datos: Partial<Camiseta>) => {
+        setArchivosSeleccionados([]);
+        setImagenesEliminadas([]);
+        setModalCam({
+            abierto: true,
+            anio,
+            esNueva,
+            datos,
+            coloresTexto: formatLista(datos.colores),
+        });
     };
 
     const eliminarImagenesDeBlob = async (urls: string[]) => {
@@ -186,14 +205,14 @@ export default function CamisetasPage() {
         setGuardando(true);
         setError('');
         try {
-            const { anio, esNueva, datos } = modalCam;
+            const { anio, esNueva, datos, coloresTexto } = modalCam;
             const temp = temporadas.find((t) => t.anio === anio);
             if (!temp) {
                 setError('Temporada no encontrada');
                 return;
             }
 
-            const colores = Array.isArray(datos.colores) ? datos.colores : [];
+            const colores = parseLista(coloresTexto);
             const imagenesActuales = Array.isArray(datos.imagenes) ? datos.imagenes : [];
             const urlsSubidas = await subirImagenesABlob(anio, String(datos.tipo ?? 'Titular'));
             const imagenes = [...imagenesActuales, ...urlsSubidas];
@@ -204,6 +223,7 @@ export default function CamisetasPage() {
             const payload: Camiseta = {
                 id: Number(datos.id ?? 0),
                 proveedor: String(datos.proveedor ?? ''),
+                jugador: datos.jugador ? String(datos.jugador) : null,
                 colores,
                 descripcion: String(datos.descripcion ?? ''),
                 tipo: String(datos.tipo ?? 'Titular'),
@@ -380,9 +400,7 @@ export default function CamisetasPage() {
                                                                     <div className="flex justify-end gap-1">
                                                                         <button
                                                                             onClick={() => {
-                                                                                setArchivosSeleccionados([]);
-                                                                                setImagenesEliminadas([]);
-                                                                                setModalCam({ abierto: true, anio: temp.anio, esNueva: false, datos: { ...cam } });
+                                                                                abrirModalCamiseta(temp.anio, false, { ...cam });
                                                                             }}
                                                                             className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer"
                                                                         >
@@ -410,9 +428,7 @@ export default function CamisetasPage() {
                                         <div className="px-6 py-3 border-t border-gray-50">
                                             <button
                                                 onClick={() => {
-                                                    setArchivosSeleccionados([]);
-                                                    setImagenesEliminadas([]);
-                                                    setModalCam({ abierto: true, anio: temp.anio, esNueva: true, datos: { ...EMPTY_CAM } });
+                                                    abrirModalCamiseta(temp.anio, true, { ...EMPTY_CAM });
                                                 }}
                                                 className="flex items-center gap-1.5 text-sm text-[#A6192E] font-semibold hover:underline cursor-pointer"
                                             >
@@ -506,6 +522,16 @@ export default function CamisetasPage() {
                                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-600 mb-1">Jugador</label>
+                                <input
+                                    type="text"
+                                    value={modalCam.datos.jugador ?? ''}
+                                    onChange={(e) => setModalCam((m) => ({ ...m, datos: { ...m.datos, jugador: e.target.value || null } }))}
+                                    placeholder="Jugador asociado"
+                                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
+                                />
+                            </div>
                             <div className="md:col-span-2">
                                 <label className="block text-xs font-semibold text-gray-600 mb-1">Descripción</label>
                                 <textarea
@@ -520,8 +546,8 @@ export default function CamisetasPage() {
                                 <label className="block text-xs font-semibold text-gray-600 mb-1">Colores (coma separada)</label>
                                 <input
                                     type="text"
-                                    value={(modalCam.datos.colores ?? []).join(', ')}
-                                    onChange={(e) => setModalCam((m) => ({ ...m, datos: { ...m.datos, colores: parseLista(e.target.value) } }))}
+                                    value={modalCam.coloresTexto}
+                                    onChange={(e) => setModalCam((m) => ({ ...m, coloresTexto: e.target.value }))}
                                     placeholder="Blanco, Rojo"
                                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
                                 />
