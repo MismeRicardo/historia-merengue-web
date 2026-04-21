@@ -1,4 +1,4 @@
-import { Trophy, Users, BookOpen, Swords, Medal, Clock, Shirt, User } from 'lucide-react';
+import { Trophy, Users, BookOpen, Swords, Medal, Clock, Shirt, User, Brain } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const STATS: { label: string; value: string; Icon: LucideIcon; bg: string }[] = [
@@ -44,6 +44,12 @@ const ACCIONES: { href: string; Icon: LucideIcon; titulo: string; desc: string }
         Icon: BookOpen,
         titulo: 'Historia del Club',
         desc: 'Agregar o editar eventos históricos',
+    },
+    {
+        href: '/dashboard/trivia',
+        Icon: Brain,
+        titulo: 'Gestionar Trivia',
+        desc: 'Crear y editar preguntas de trivia del club',
     },
 ];
 

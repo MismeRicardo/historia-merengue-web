@@ -144,4 +144,15 @@ export async function crearTablas() {
             activo           BOOLEAN NOT NULL DEFAULT FALSE
         )
     `;
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS trivia_preguntas (
+            id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+            pregunta    TEXT    NOT NULL,
+            tema        TEXT    NOT NULL,
+            imagen      TEXT,
+            respuestas  JSONB   NOT NULL,
+            created_at  TIMESTAMP DEFAULT NOW()
+        )
+    `;
 }

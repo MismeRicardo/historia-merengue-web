@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Trophy, Users, Star, BookOpen, LogOut, Shirt, User } from 'lucide-react';
+import { LayoutDashboard, Trophy, Users, Star, BookOpen, LogOut, Shirt, User, Brain } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const NAV_ITEMS: { href: string; label: string; Icon: LucideIcon }[] = [
@@ -12,6 +12,7 @@ const NAV_ITEMS: { href: string; label: string; Icon: LucideIcon }[] = [
     { href: '/dashboard/camisetas', label: 'Camisetas', Icon: Shirt },
     { href: '/dashboard/goleadores', label: 'Goleadores', Icon: Star },
     { href: '/dashboard/historia', label: 'Historia', Icon: BookOpen },
+    { href: '/dashboard/trivia', label: 'Trivia', Icon: Brain },
 ];
 
 async function cerrarSesion() {
@@ -21,7 +22,11 @@ async function cerrarSesion() {
     redirect('/login');
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+type AdminLayoutProps = {
+    readonly children: React.ReactNode;
+};
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
         <div className="min-h-screen bg-gray-100 flex">
             {/* Sidebar */}
