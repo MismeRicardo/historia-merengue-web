@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { del } from '@vercel/blob';
 import sql, { crearTablas } from '@/lib/db';
 
 type GoleadorInput = {
@@ -10,6 +11,7 @@ type GoleadorInput = {
     nacionalidad?: string;
     apodo?: string | null;
     activo?: boolean;
+    fotoUrl?: string | null;
 };
 
 function limpiarTexto(valor: unknown): string {
@@ -34,7 +36,7 @@ export async function PUT(
             return NextResponse.json({ error: 'ID invalido' }, { status: 400 });
         }
 
-        const exists = await sql`SELECT id FROM goleadores WHERE id = ${id}`;
+        const exists = await sql`SELECT id, foto_url FROM goleadores WHERE id = ${id}`;
         if (exists.length === 0) {
             return NextResponse.json({ error: 'Goleador no encontrado' }, { status: 404 });
         }
@@ -53,6 +55,7 @@ export async function PUT(
         const nacionalidad = limpiarTexto(body.nacionalidad);
         const apodo = limpiarTexto(body.apodo);
         const activo = Boolean(body.activo);
+        const fotoUrl = typeof body.fotoUrl === 'string' && body.fotoUrl.trim() ? body.fotoUrl.trim() : null;
 
         await sql`
             UPDATE goleadores
@@ -64,9 +67,19 @@ export async function PUT(
                 partidos = ${partidos},
                 nacionalidad = ${nacionalidad},
                 apodo = ${apodo || null},
-                activo = ${activo}
+                activo = ${activo},
+                foto_url = ${fotoUrl}
             WHERE id = ${id}
         `;
+
+        const fotoAnterior = typeof exists[0]?.foto_url === 'string' ? exists[0].foto_url : '';
+        if (fotoAnterior.startsWith('http') && fotoAnterior !== fotoUrl) {
+            try {
+                await del(fotoAnterior);
+            } catch (err) {
+                console.error('[delete goleador anterior]', err);
+            }
+        }
 
         return NextResponse.json({ ok: true });
     } catch (err) {
@@ -88,12 +101,16 @@ export async function DELETE(
             return NextResponse.json({ error: 'ID invalido' }, { status: 400 });
         }
 
-        const exists = await sql`SELECT id FROM goleadores WHERE id = ${id}`;
+        const exists = await sql`SELECT id, foto_url FROM goleadores WHERE id = ${id}`;
         if (exists.length === 0) {
             return NextResponse.json({ error: 'Goleador no encontrado' }, { status: 404 });
         }
 
+        const fotoUrl = typeof exists[0]?.foto_url === 'string' ? exists[0].foto_url : '';
         await sql`DELETE FROM goleadores WHERE id = ${id}`;
+        if (fotoUrl.startsWith('http')) {
+            await del(fotoUrl);
+        }
         return NextResponse.json({ ok: true });
     } catch (err) {
         console.error(err);

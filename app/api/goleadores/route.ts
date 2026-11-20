@@ -10,6 +10,7 @@ type GoleadorInput = {
     nacionalidad?: string;
     apodo?: string | null;
     activo?: boolean;
+    fotoUrl?: string | null;
 };
 
 function limpiarTexto(valor: unknown): string {
@@ -26,7 +27,7 @@ export async function GET() {
         await crearTablas();
 
         const rows = await sql`
-            SELECT id, nombre, nombre_completo, goles, temporadas, partidos, nacionalidad, apodo, activo
+            SELECT id, nombre, nombre_completo, goles, temporadas, partidos, nacionalidad, apodo, activo, foto_url
             FROM goleadores
             ORDER BY goles DESC, partidos ASC, id ASC
         `;
@@ -42,6 +43,7 @@ export async function GET() {
                 nacionalidad: row.nacionalidad,
                 apodo: row.apodo,
                 activo: row.activo,
+                fotoUrl: row.foto_url ?? null,
             }))
         );
     } catch (err) {
@@ -68,12 +70,13 @@ export async function POST(req: Request) {
         const nacionalidad = limpiarTexto(body.nacionalidad);
         const apodo = limpiarTexto(body.apodo);
         const activo = Boolean(body.activo);
+        const fotoUrl = typeof body.fotoUrl === 'string' && body.fotoUrl.trim() ? body.fotoUrl.trim() : null;
 
         const max = await sql`SELECT COALESCE(MAX(id), 0) AS max_id FROM goleadores`;
         const id = Number(max[0]?.max_id ?? 0) + 1;
 
         await sql`
-            INSERT INTO goleadores (id, nombre, nombre_completo, goles, temporadas, partidos, nacionalidad, apodo, activo)
+            INSERT INTO goleadores (id, nombre, nombre_completo, goles, temporadas, partidos, nacionalidad, apodo, activo, foto_url)
             VALUES (
                 ${id},
                 ${nombre},
@@ -83,7 +86,8 @@ export async function POST(req: Request) {
                 ${partidos},
                 ${nacionalidad},
                 ${apodo || null},
-                ${activo}
+                ${activo},
+                ${fotoUrl}
             )
         `;
 

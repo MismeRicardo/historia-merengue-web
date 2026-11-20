@@ -14,6 +14,7 @@ type Goleador = {
     nacionalidad: string;
     apodo: string | null;
     activo: boolean;
+    fotoUrl: string | null;
 };
 
 type FormData = {
@@ -25,6 +26,7 @@ type FormData = {
     nacionalidad: string;
     apodo: string;
     activo: boolean;
+    fotoUrl: string | null;
 };
 
 const EMPTY_FORM: FormData = {
@@ -36,6 +38,7 @@ const EMPTY_FORM: FormData = {
     nacionalidad: 'Peru',
     apodo: '',
     activo: false,
+    fotoUrl: null,
 };
 
 export default function GoleadoresPage() {
@@ -43,6 +46,7 @@ export default function GoleadoresPage() {
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
+    const [archivoFoto, setArchivoFoto] = useState<File | null>(null);
 
     const [modal, setModal] = useState<{
         abierto: boolean;
@@ -86,10 +90,12 @@ export default function GoleadoresPage() {
     const goleadoresActivos = ranking.filter((item) => item.activo).length;
 
     const abrirNuevo = () => {
+        setArchivoFoto(null);
         setModal({ abierto: true, esNuevo: true, id: null, data: { ...EMPTY_FORM } });
     };
 
     const abrirEditar = (goleador: Goleador) => {
+        setArchivoFoto(null);
         setModal({
             abierto: true,
             esNuevo: false,
@@ -103,11 +109,34 @@ export default function GoleadoresPage() {
                 nacionalidad: goleador.nacionalidad,
                 apodo: goleador.apodo ?? '',
                 activo: goleador.activo,
+                fotoUrl: goleador.fotoUrl,
             },
         });
     };
 
     const guardar = async () => {
+        let fotoUrl = modal.data.fotoUrl;
+        let fotoNuevaUrl: string | null = null;
+
+        if (archivoFoto) {
+            try {
+                const form = new FormData();
+                form.append('file', archivoFoto);
+                form.append('tipo', 'goleadores');
+                const upload = await fetch('/api/personas/upload', { method: 'POST', body: form });
+                const data = await upload.json();
+                if (!upload.ok) {
+                    setError(data.error ?? 'No se pudo subir la foto');
+                    return;
+                }
+                fotoUrl = data.url;
+                fotoNuevaUrl = data.url;
+            } catch {
+                setError('No se pudo subir la foto');
+                return;
+            }
+        }
+
         const payload = {
             nombre: modal.data.nombre.trim(),
             nombreCompleto: modal.data.nombreCompleto.trim(),
@@ -117,6 +146,7 @@ export default function GoleadoresPage() {
             nacionalidad: modal.data.nacionalidad.trim(),
             apodo: modal.data.apodo.trim(),
             activo: modal.data.activo,
+            fotoUrl,
         };
 
         if (!payload.nombre) {
@@ -139,10 +169,18 @@ export default function GoleadoresPage() {
             if (!res.ok) {
                 const data = await res.json();
                 setError(data.error ?? 'No se pudo guardar');
+                if (fotoNuevaUrl) {
+                    await fetch('/api/personas/upload', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: fotoNuevaUrl }),
+                    }).catch(() => undefined);
+                }
                 return;
             }
 
             setModal((m) => ({ ...m, abierto: false }));
+            setArchivoFoto(null);
             await cargar();
         } catch {
             setError('Error de conexion');
@@ -312,6 +350,44 @@ export default function GoleadoresPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="sm:col-span-2">
+                                <label className="block text-xs font-semibold text-gray-600 mb-2">Foto</label>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                                        {archivoFoto ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={URL.createObjectURL(archivoFoto)} alt="Vista previa" className="w-full h-full object-cover" />
+                                        ) : modal.data.fotoUrl ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={modal.data.fotoUrl} alt="Foto actual" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <UserRound size={30} className="text-gray-400" />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={(e) => setArchivoFoto(e.target.files?.[0] ?? null)}
+                                            className="block text-xs text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#A6192E]/10 file:text-[#A6192E] hover:file:bg-[#A6192E]/20"
+                                        />
+                                        {(modal.data.fotoUrl || archivoFoto) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setArchivoFoto(null);
+                                                    setModal((m) => ({ ...m, data: { ...m.data, fotoUrl: null } }));
+                                                }}
+                                                className="text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer"
+                                            >
+                                                Quitar foto
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">JPG, PNG o WebP. Máximo 5 MB.</p>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre</label>
                                 <input

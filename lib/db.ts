@@ -102,8 +102,13 @@ export async function crearTablas() {
             titulos       JSONB   NOT NULL DEFAULT '[]'::jsonb,
             partidos      INTEGER NOT NULL DEFAULT 0,
             descripcion   TEXT    NOT NULL DEFAULT '',
-            activo        BOOLEAN NOT NULL DEFAULT FALSE
+            activo        BOOLEAN NOT NULL DEFAULT FALSE,
+            foto_url      TEXT
         )
+    `;
+    await sql`
+        ALTER TABLE entrenadores
+        ADD COLUMN IF NOT EXISTS foto_url TEXT
     `;
 
     // Migration: move from legacy JSON titles to numeric title count.
@@ -141,8 +146,13 @@ export async function crearTablas() {
             partidos         INTEGER NOT NULL DEFAULT 0,
             nacionalidad     TEXT    NOT NULL DEFAULT '',
             apodo            TEXT,
-            activo           BOOLEAN NOT NULL DEFAULT FALSE
+            activo           BOOLEAN NOT NULL DEFAULT FALSE,
+            foto_url         TEXT
         )
+    `;
+    await sql`
+        ALTER TABLE goleadores
+        ADD COLUMN IF NOT EXISTS foto_url TEXT
     `;
 
     await sql`

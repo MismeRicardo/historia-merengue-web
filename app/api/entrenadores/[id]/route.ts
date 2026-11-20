@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { del } from '@vercel/blob';
 import sql, { crearTablas } from '@/lib/db';
 
 type Periodo = {
@@ -13,6 +14,7 @@ type EntrenadorInput = {
     titulos?: number;
     descripcion?: string;
     activo?: boolean;
+    fotoUrl?: string | null;
 };
 
 function limpiarPeriodos(periodos: unknown): Periodo[] {
@@ -38,7 +40,7 @@ export async function PUT(
             return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
         }
 
-        const exists = await sql`SELECT id FROM entrenadores WHERE id = ${id}`;
+        const exists = await sql`SELECT id, foto_url FROM entrenadores WHERE id = ${id}`;
         if (exists.length === 0) {
             return NextResponse.json({ error: 'Entrenador no encontrado' }, { status: 404 });
         }
@@ -55,6 +57,7 @@ export async function PUT(
         const titulos = Math.max(0, Number(body.titulos ?? 0) || 0);
         const descripcion = String(body.descripcion ?? '').trim();
         const activo = Boolean(body.activo);
+        const fotoUrl = typeof body.fotoUrl === 'string' && body.fotoUrl.trim() ? body.fotoUrl.trim() : null;
 
         await sql`
             UPDATE entrenadores
@@ -64,9 +67,19 @@ export async function PUT(
                 periodos = ${JSON.stringify(periodos)}::jsonb,
                 titulos_cantidad = ${titulos},
                 descripcion = ${descripcion},
-                activo = ${activo}
+                activo = ${activo},
+                foto_url = ${fotoUrl}
             WHERE id = ${id}
         `;
+
+        const fotoAnterior = typeof exists[0]?.foto_url === 'string' ? exists[0].foto_url : '';
+        if (fotoAnterior.startsWith('http') && fotoAnterior !== fotoUrl) {
+            try {
+                await del(fotoAnterior);
+            } catch (err) {
+                console.error('[delete entrenador anterior]', err);
+            }
+        }
 
         return NextResponse.json({ ok: true });
     } catch (err) {
@@ -88,12 +101,16 @@ export async function DELETE(
             return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
         }
 
-        const exists = await sql`SELECT id FROM entrenadores WHERE id = ${id}`;
+        const exists = await sql`SELECT id, foto_url FROM entrenadores WHERE id = ${id}`;
         if (exists.length === 0) {
             return NextResponse.json({ error: 'Entrenador no encontrado' }, { status: 404 });
         }
 
+        const fotoUrl = typeof exists[0]?.foto_url === 'string' ? exists[0].foto_url : '';
         await sql`DELETE FROM entrenadores WHERE id = ${id}`;
+        if (fotoUrl.startsWith('http')) {
+            await del(fotoUrl);
+        }
         return NextResponse.json({ ok: true });
     } catch (err) {
         console.error(err);

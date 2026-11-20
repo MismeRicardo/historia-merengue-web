@@ -13,6 +13,7 @@ type EntrenadorInput = {
     titulos?: number;
     descripcion?: string;
     activo?: boolean;
+    fotoUrl?: string | null;
 };
 
 function limpiarPeriodos(periodos: unknown): Periodo[] {
@@ -30,7 +31,7 @@ export async function GET() {
         await crearTablas();
 
         const rows = await sql`
-            SELECT id, nombre, nacionalidad, periodos, titulos_cantidad, descripcion, activo
+            SELECT id, nombre, nacionalidad, periodos, titulos_cantidad, descripcion, activo, foto_url
             FROM entrenadores
             ORDER BY activo DESC, id ASC
         `;
@@ -44,6 +45,7 @@ export async function GET() {
                 titulos: Number(r.titulos_cantidad ?? 0),
                 descripcion: r.descripcion,
                 activo: r.activo,
+                fotoUrl: r.foto_url ?? null,
             }))
         );
     } catch (err) {
@@ -68,12 +70,13 @@ export async function POST(req: Request) {
         const titulos = Math.max(0, Number(body.titulos ?? 0) || 0);
         const descripcion = String(body.descripcion ?? '').trim();
         const activo = Boolean(body.activo);
+        const fotoUrl = typeof body.fotoUrl === 'string' && body.fotoUrl.trim() ? body.fotoUrl.trim() : null;
 
         const max = await sql`SELECT COALESCE(MAX(id), 0) AS max_id FROM entrenadores`;
         const id = Number(max[0]?.max_id ?? 0) + 1;
 
         await sql`
-            INSERT INTO entrenadores (id, nombre, nacionalidad, periodos, titulos_cantidad, descripcion, activo)
+            INSERT INTO entrenadores (id, nombre, nacionalidad, periodos, titulos_cantidad, descripcion, activo, foto_url)
             VALUES (
                 ${id},
                 ${nombre},
@@ -81,7 +84,8 @@ export async function POST(req: Request) {
                 ${JSON.stringify(periodos)}::jsonb,
                 ${titulos},
                 ${descripcion},
-                ${activo}
+                ${activo},
+                ${fotoUrl}
             )
         `;
 
