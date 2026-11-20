@@ -6,6 +6,7 @@ type HistoriaInput = {
     titulo?: string;
     descripcion?: string;
     icono?: string;
+    imagenUrl?: string | null;
 };
 
 export async function GET() {
@@ -13,7 +14,7 @@ export async function GET() {
         await crearTablas();
 
         const rows = await sql`
-            SELECT id, anio, titulo, descripcion, icono
+            SELECT id, anio, titulo, descripcion, icono, imagen_url
             FROM historia_eventos
             ORDER BY anio ASC, id ASC
         `;
@@ -25,6 +26,7 @@ export async function GET() {
                 titulo: r.titulo,
                 descripcion: r.descripcion,
                 icono: r.icono,
+                imagenUrl: r.imagen_url ?? null,
             }))
         );
     } catch (err) {
@@ -42,6 +44,9 @@ export async function POST(req: Request) {
         const titulo = String(body.titulo ?? '').trim();
         const descripcion = String(body.descripcion ?? '').trim();
         const icono = String(body.icono ?? 'star').trim() || 'star';
+        const imagenUrl = typeof body.imagenUrl === 'string' && body.imagenUrl.trim()
+            ? body.imagenUrl.trim()
+            : null;
 
         if (!Number.isFinite(anio) || !titulo) {
             return NextResponse.json(
@@ -54,8 +59,8 @@ export async function POST(req: Request) {
         const id = Number(max[0]?.max_id ?? 0) + 1;
 
         await sql`
-            INSERT INTO historia_eventos (id, anio, titulo, descripcion, icono)
-            VALUES (${id}, ${anio}, ${titulo}, ${descripcion}, ${icono})
+            INSERT INTO historia_eventos (id, anio, titulo, descripcion, icono, imagen_url)
+            VALUES (${id}, ${anio}, ${titulo}, ${descripcion}, ${icono}, ${imagenUrl})
         `;
 
         return NextResponse.json({ ok: true, id }, { status: 201 });

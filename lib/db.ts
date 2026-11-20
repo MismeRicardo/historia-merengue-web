@@ -144,8 +144,13 @@ export async function crearTablas() {
             anio        INTEGER NOT NULL,
             titulo      TEXT    NOT NULL,
             descripcion TEXT    NOT NULL DEFAULT '',
-            icono       TEXT    NOT NULL DEFAULT 'star'
+            icono       TEXT    NOT NULL DEFAULT 'star',
+            imagen_url  TEXT
         )
+    `;
+    await sql`
+        ALTER TABLE historia_eventos
+        ADD COLUMN IF NOT EXISTS imagen_url TEXT
     `;
 
     await sql`

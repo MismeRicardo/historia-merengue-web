@@ -10,6 +10,7 @@ type EventoHistoria = {
     titulo: string;
     descripcion: string;
     icono: string;
+    imagenUrl: string | null;
 };
 
 type FormData = {
@@ -17,6 +18,7 @@ type FormData = {
     titulo: string;
     descripcion: string;
     icono: string;
+    imagenUrl: string | null;
 };
 
 const EMPTY_FORM: FormData = {
@@ -24,6 +26,7 @@ const EMPTY_FORM: FormData = {
     titulo: '',
     descripcion: '',
     icono: 'star',
+    imagenUrl: null,
 };
 
 const ICONOS = ['star', 'trophy', 'people', 'stadium'];
@@ -33,6 +36,7 @@ export default function HistoriaPage() {
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
+    const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
 
     const [modal, setModal] = useState<{
         abierto: boolean;
@@ -68,10 +72,12 @@ export default function HistoriaPage() {
     }, [cargar]);
 
     const abrirNuevo = () => {
+        setArchivoImagen(null);
         setModal({ abierto: true, esNuevo: true, id: null, data: { ...EMPTY_FORM } });
     };
 
     const abrirEditar = (ev: EventoHistoria) => {
+        setArchivoImagen(null);
         setModal({
             abierto: true,
             esNuevo: false,
@@ -81,16 +87,39 @@ export default function HistoriaPage() {
                 titulo: ev.titulo,
                 descripcion: ev.descripcion,
                 icono: ev.icono || 'star',
+                imagenUrl: ev.imagenUrl,
             },
         });
     };
 
     const guardar = async () => {
+        let imagenUrl = modal.data.imagenUrl;
+        let nuevaUrl: string | null = null;
+
+        if (archivoImagen) {
+            try {
+                const form = new FormData();
+                form.append('file', archivoImagen);
+                const upload = await fetch('/api/historia/upload', { method: 'POST', body: form });
+                const data = await upload.json();
+                if (!upload.ok) {
+                    setError(data.error ?? 'No se pudo subir la imagen');
+                    return;
+                }
+                imagenUrl = data.url;
+                nuevaUrl = data.url;
+            } catch {
+                setError('No se pudo subir la imagen');
+                return;
+            }
+        }
+
         const payload = {
             anio: Number(modal.data.anio),
             titulo: modal.data.titulo.trim(),
             descripcion: modal.data.descripcion.trim(),
             icono: modal.data.icono.trim() || 'star',
+            imagenUrl,
         };
 
         if (!payload.anio || !payload.titulo) {
@@ -114,10 +143,18 @@ export default function HistoriaPage() {
             if (!res.ok) {
                 const data = await res.json();
                 setError(data.error ?? 'No se pudo guardar');
+                if (nuevaUrl) {
+                    await fetch('/api/historia/upload', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: nuevaUrl }),
+                    }).catch(() => undefined);
+                }
                 return;
             }
 
             setModal((m) => ({ ...m, abierto: false }));
+            setArchivoImagen(null);
             await cargar();
         } catch {
             setError('Error de conexion');
@@ -181,6 +218,14 @@ export default function HistoriaPage() {
                     {eventos.map((ev) => (
                         <div key={ev.id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
                             <div className="flex items-start justify-between gap-4">
+                                {ev.imagenUrl && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={ev.imagenUrl}
+                                        alt={ev.titulo}
+                                        className="w-28 h-20 rounded-xl object-cover bg-gray-100 shrink-0"
+                                    />
+                                )}
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className="text-xs px-2 py-1 rounded-full bg-[#A6192E]/10 text-[#A6192E] font-semibold">
@@ -232,6 +277,44 @@ export default function HistoriaPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="sm:col-span-2">
+                                <label className="block text-xs font-semibold text-gray-600 mb-2">Imagen de referencia</label>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-32 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                                        {archivoImagen ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={URL.createObjectURL(archivoImagen)} alt="Vista previa" className="w-full h-full object-cover" />
+                                        ) : modal.data.imagenUrl ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={modal.data.imagenUrl} alt="Imagen actual" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Sin imagen</div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={(e) => setArchivoImagen(e.target.files?.[0] ?? null)}
+                                            className="block text-xs text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#A6192E]/10 file:text-[#A6192E]"
+                                        />
+                                        {(modal.data.imagenUrl || archivoImagen) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setArchivoImagen(null);
+                                                    setModal((m) => ({ ...m, data: { ...m.data, imagenUrl: null } }));
+                                                }}
+                                                className="mt-3 text-xs font-semibold text-red-600 cursor-pointer"
+                                            >
+                                                Quitar imagen
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">JPG, PNG o WebP. Máximo 5 MB.</p>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-semibold text-gray-600 mb-1">Año</label>
                                 <input
