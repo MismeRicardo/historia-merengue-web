@@ -22,6 +22,12 @@ interface TemporadaPartidos {
     partidos: Partido[];
 }
 
+interface Equipo {
+    id: number;
+    nombre: string;
+    escudoUrl: string | null;
+}
+
 const EMPTY_TEMP: Partial<TemporadaPartidos> = { anio: new Date().getFullYear(), partidos: [] };
 const EMPTY_PARTIDO: Partial<Partido> = {
     equipo_local: 'Universitario',
@@ -72,13 +78,19 @@ export default function PartidosPage() {
     const [error, setError] = useState('');
     const [goleadoresLocalInput, setGoleadoresLocalInput] = useState('');
     const [goleadoresVisitanteInput, setGoleadoresVisitanteInput] = useState('');
+    const [equipos, setEquipos] = useState<Equipo[]>([]);
 
     const cargar = useCallback(async () => {
         setCargando(true);
         try {
-            const res = await fetch('/api/partidos');
-            const data = await res.json();
+            const [partidosRes, equiposRes] = await Promise.all([
+                fetch('/api/partidos'),
+                fetch('/api/equipos'),
+            ]);
+            const data = await partidosRes.json();
+            const equiposData = equiposRes.ok ? await equiposRes.json() : [];
             setTemporadas(data);
+            setEquipos(equiposData);
         } catch {
             setError('Error al cargar los partidos');
         } finally {
@@ -439,21 +451,29 @@ export default function PartidosPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-semibold text-gray-600 mb-1">Equipo Local</label>
-                                <input
-                                    type="text"
+                                <select
                                     value={modalPartido.datos.equipo_local ?? ''}
                                     onChange={(e) => setModalPartido((m) => ({ ...m, datos: { ...m.datos, equipo_local: e.target.value } }))}
                                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
-                                />
+                                >
+                                    <option value="">Seleccionar equipo</option>
+                                    {equipos.map((equipo) => (
+                                        <option key={equipo.id} value={equipo.nombre}>{equipo.nombre}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-600 mb-1">Equipo Visitante</label>
-                                <input
-                                    type="text"
+                                <select
                                     value={modalPartido.datos.equipo_visitante ?? ''}
                                     onChange={(e) => setModalPartido((m) => ({ ...m, datos: { ...m.datos, equipo_visitante: e.target.value } }))}
                                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#A6192E]"
-                                />
+                                >
+                                    <option value="">Seleccionar equipo</option>
+                                    {equipos.map((equipo) => (
+                                        <option key={equipo.id} value={equipo.nombre}>{equipo.nombre}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>

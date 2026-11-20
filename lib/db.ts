@@ -94,6 +94,18 @@ export async function crearTablas() {
     `;
 
     await sql`
+        CREATE TABLE IF NOT EXISTS equipos (
+            id        INTEGER PRIMARY KEY,
+            nombre    TEXT NOT NULL UNIQUE,
+            escudo_url TEXT
+        )
+    `;
+    await sql`
+        ALTER TABLE equipos
+        ADD COLUMN IF NOT EXISTS escudo_url TEXT
+    `;
+
+    await sql`
         CREATE TABLE IF NOT EXISTS entrenadores (
             id            INTEGER PRIMARY KEY,
             nombre        TEXT    NOT NULL,

@@ -75,12 +75,23 @@ export async function PUT(
             ORDER BY fecha DESC, id ASC
         `;
 
+        const equipos = await sql`
+            SELECT nombre, escudo_url
+            FROM equipos
+        `;
+        const buscarEscudo = (nombre: string) =>
+            equipos.find((e) =>
+                String(e.nombre).toLowerCase().trim() === String(nombre).toLowerCase().trim()
+            )?.escudo_url ?? null;
+
         return NextResponse.json({
             anio,
             partidos: items.map((i) => ({
                 id: i.id,
                 equipo_local: i.equipo_local,
                 equipo_visitante: i.equipo_visitante,
+                equipo_local_escudo: buscarEscudo(i.equipo_local),
+                equipo_visitante_escudo: buscarEscudo(i.equipo_visitante),
                 goles_local: i.goles_local,
                 goles_visitante: i.goles_visitante,
                 fecha: i.fecha,
